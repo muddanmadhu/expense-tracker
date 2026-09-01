@@ -135,7 +135,12 @@
               <p class="eyebrow">MONTH ON MONTH</p>
               <h2>Spending progress</h2>
             </div>
-            <select id="month-filter" aria-label="Select month"></select>
+            <div class="report-actions">
+              <select id="month-filter" aria-label="Select month"></select>
+              <button id="export-excel" class="export-button" type="button">
+                Export Excel
+              </button>
+            </div>
           </div>
           <div class="progress-summary">
             <div>
@@ -180,6 +185,7 @@
                 <th>Date</th>
                 <th>Expense</th>
                 <th>Payment</th>
+                <th>Tracked from</th>
                 <th>Amount</th>
                 <th><span class="sr-only">Actions</span></th>
               </tr>

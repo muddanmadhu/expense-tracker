@@ -308,6 +308,33 @@ select:focus {
   height: 40px;
 }
 
+.report-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.export-button {
+  height: 40px;
+  padding: 0 14px;
+  border: 1px solid var(--ink);
+  background: var(--ink);
+  color: white;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.export-button:hover {
+  background: #245044;
+}
+
+.export-button:disabled {
+  border-color: var(--line);
+  background: var(--line);
+  color: var(--ink-soft);
+  cursor: not-allowed;
+}
+
 .progress-summary {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
@@ -466,7 +493,7 @@ select:focus {
 table {
   width: 100%;
   border-collapse: collapse;
-  min-width: 680px;
+  min-width: 820px;
 }
 
 th,
@@ -484,12 +511,12 @@ th {
   text-transform: uppercase;
 }
 
-td:nth-child(4),
-th:nth-child(4) {
+td:nth-child(5),
+th:nth-child(5) {
   text-align: right;
 }
 
-td:nth-child(4) {
+td:nth-child(5) {
   font-weight: 700;
 }
 
@@ -509,6 +536,13 @@ td:nth-child(4) {
   background: #eef1e5;
   border-radius: 20px;
   font-size: 12px;
+}
+
+.device-info {
+  max-width: 180px;
+  color: var(--ink-soft);
+  font-size: 11px;
+  line-height: 1.45;
 }
 
 .row-action {
@@ -620,6 +654,42 @@ footer p {
 
   .hero {
     min-height: auto;
+    padding: 40px 0 46px;
+    gap: 30px;
+  }
+
+  h1 {
+    font-size: clamp(40px, 13vw, 52px);
+    letter-spacing: -0.055em;
+  }
+
+  .hero-copy {
+    font-size: 15px;
+    line-height: 1.6;
+  }
+
+  .hero-stat {
+    min-width: 0;
+    padding: 22px;
+    box-shadow: 8px 8px 0 var(--lime);
+  }
+
+  .hero-stat strong {
+    font-size: 30px;
+  }
+
+  .entry-card,
+  .dashboard-card,
+  .history-card {
+    padding: 24px 18px;
+  }
+
+  .dashboard-card {
+    min-height: 0;
+  }
+
+  form {
+    margin-top: 28px;
   }
 
   .form-grid {
@@ -635,6 +705,36 @@ footer p {
     flex-direction: column;
   }
 
+  .report-actions {
+    width: 100%;
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  #month-filter,
+  .export-button {
+    width: 100%;
+    min-height: 46px;
+  }
+
+  input,
+  select {
+    font-size: 16px;
+  }
+
+  .progress-summary {
+    grid-template-columns: 1fr;
+    margin-top: 26px;
+  }
+
+  .monthly-chart {
+    gap: 7px;
+  }
+
+  .top-category {
+    margin-top: 28px;
+  }
+
   .form-footer,
   footer {
     align-items: stretch;
@@ -643,5 +743,94 @@ footer p {
 
   .primary-button {
     width: 100%;
+  }
+
+  .secondary-button {
+    width: 100%;
+  }
+
+  .history-card .section-heading {
+    align-items: center;
+  }
+
+  .table-wrap {
+    margin-top: 20px;
+    overflow: visible;
+  }
+
+  table,
+  tbody,
+  tr,
+  td {
+    display: block;
+    width: 100%;
+  }
+
+  table {
+    min-width: 0;
+  }
+
+  thead {
+    display: none;
+  }
+
+  tbody {
+    display: grid;
+    gap: 12px;
+  }
+
+  tbody tr {
+    position: relative;
+    padding: 16px;
+    border: 1px solid var(--line);
+    background: #fff;
+  }
+
+  tbody td {
+    padding: 0;
+    border: 0;
+    text-align: left;
+  }
+
+  tbody td:first-child {
+    margin-bottom: 12px;
+    color: var(--ink-soft);
+    font-size: 12px;
+  }
+
+  tbody td:nth-child(2) {
+    padding-right: 78px;
+  }
+
+  tbody td:nth-child(3) {
+    margin-top: 14px;
+  }
+
+  tbody td:nth-child(4) {
+    margin-top: 10px;
+    padding-right: 88px;
+  }
+
+  tbody td:nth-child(5) {
+    position: absolute;
+    right: 16px;
+    top: 48px;
+    text-align: right;
+  }
+
+  tbody td:last-child {
+    position: absolute;
+    right: 10px;
+    bottom: 10px;
+    width: auto;
+  }
+
+  .row-action {
+    width: 42px;
+    height: 42px;
+  }
+
+  .empty-state {
+    padding: 38px 10px;
   }
 }

@@ -23,6 +23,7 @@ const subcategoryInput = document.querySelector("#subcategory");
 const cancelEditButton = document.querySelector("#cancel-edit");
 const submitLabel = document.querySelector("#submit-label");
 const monthFilter = document.querySelector("#month-filter");
+const exportExcelButton = document.querySelector("#export-excel");
 const expenseList = document.querySelector("#expense-list");
 const emptyState = document.querySelector("#empty-state");
 
@@ -170,6 +171,105 @@ function getMonthlyTotal(key) {
   return total(expenses.filter((expense) => monthKey(expense.date) === key));
 }
 
+function detectDevice() {
+  const userAgent = navigator.userAgent;
+  const isTablet =
+    /iPad|Tablet/i.test(userAgent) ||
+    (/Android/i.test(userAgent) && !/Mobile/i.test(userAgent));
+  const isMobile =
+    navigator.userAgentData?.mobile ?? /Android|iPhone|iPod|Mobile/i.test(userAgent);
+  const deviceClass = isTablet ? "TABLET" : isMobile ? "MOBILE" : "DESKTOP";
+
+  let operatingSystem = "OTHER OS";
+  if (/Windows/i.test(userAgent)) operatingSystem = "WINDOWS";
+  else if (/Android/i.test(userAgent)) operatingSystem = "ANDROID";
+  else if (/iPhone|iPad|iPod/i.test(userAgent)) operatingSystem = "IOS";
+  else if (/Macintosh|Mac OS X/i.test(userAgent)) operatingSystem = "MACOS";
+  else if (/Linux/i.test(userAgent)) operatingSystem = "LINUX";
+
+  let browser = "WEB BROWSER";
+  if (/Edg\//i.test(userAgent)) browser = "EDGE";
+  else if (/OPR\//i.test(userAgent)) browser = "OPERA";
+  else if (/Chrome\//i.test(userAgent)) browser = "CHROME";
+  else if (/Firefox\//i.test(userAgent)) browser = "FIREFOX";
+  else if (/Safari\//i.test(userAgent)) browser = "SAFARI";
+
+  const androidModel = userAgent.match(/;\s*([^;()]+?)\s+Build\//i)?.[1];
+  const deviceName =
+    androidModel?.trim().toUpperCase() ||
+    (/iPhone/i.test(userAgent)
+      ? "IPHONE"
+      : /iPad/i.test(userAgent)
+        ? "IPAD"
+        : deviceClass);
+
+  return ["WEB", deviceName, operatingSystem, browser].join(" · ");
+}
+
+function csvCell(value) {
+  const text = String(value ?? "");
+  return `"${text.replaceAll('"', '""')}"`;
+}
+
+function exportMonthlyReport() {
+  const selectedMonth = monthFilter.value;
+  const monthlyExpenses = expenses
+    .filter((expense) => monthKey(expense.date) === selectedMonth)
+    .sort((a, b) => a.date.localeCompare(b.date));
+
+  if (!monthlyExpenses.length) return;
+
+  const categoryTotals = monthlyExpenses.reduce((report, expense) => {
+    const type = expense.type.toUpperCase();
+    report[type] = (report[type] || 0) + expense.amount;
+    return report;
+  }, {});
+  const rows = [
+    ["POCKETTRACK EXPENSE REPORT"],
+    ["Month", formatMonth(selectedMonth)],
+    ["Total spent", getMonthlyTotal(selectedMonth).toFixed(2)],
+    [],
+    ["CATEGORY SUMMARY"],
+    ["Expense Type", "Amount (INR)"],
+    ...Object.entries(categoryTotals)
+      .sort((a, b) => b[1] - a[1])
+      .map(([type, amount]) => [type, amount.toFixed(2)]),
+    [],
+    ["EXPENSE DETAILS"],
+    [
+      "Date",
+      "Expense Type",
+      "Subcategory",
+      "Payment Mode",
+      "Tracked From",
+      "Description",
+      "Amount (INR)",
+    ],
+    ...monthlyExpenses.map((expense) => [
+      expense.date,
+      expense.type.toUpperCase(),
+      expense.subcategory || "",
+      expense.mode,
+      expense.device || "WEB · DEVICE NOT RECORDED",
+      expense.description || "",
+      expense.amount.toFixed(2),
+    ]),
+  ];
+  const csv = `\uFEFF${rows
+    .map((row) => row.map(csvCell).join(","))
+    .join("\r\n")}`;
+  const url = URL.createObjectURL(
+    new Blob([csv], { type: "text/csv;charset=utf-8" }),
+  );
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = `expense-report-${selectedMonth}.csv`;
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+
 function escapeHtml(value) {
   const element = document.createElement("div");
   element.textContent = value;
@@ -220,6 +320,7 @@ function renderProgress() {
   const selectedTotal = getMonthlyTotal(selectedMonth);
   const previousTotal = getMonthlyTotal(previousMonth);
 
+  exportExcelButton.disabled = selectedTotal === 0;
   document.querySelector("#month-total").textContent = currency.format(selectedTotal);
   document.querySelector("#previous-total").textContent = currency.format(previousTotal);
 
@@ -319,6 +420,7 @@ function renderHistory() {
             }
           </td>
           <td><span class="mode-pill">${escapeHtml(expense.mode)}</span></td>
+          <td class="device-info">${escapeHtml(expense.device || "WEB · DEVICE NOT RECORDED")}</td>
           <td>${currency.format(expense.amount)}</td>
           <td>
             <div class="row-actions">
@@ -388,6 +490,7 @@ form.addEventListener("submit", (event) => {
     type: expenseType,
     subcategory: data.get("subcategory") || "",
     mode: data.get("mode"),
+    device: existingExpense?.device || detectDevice(),
     description: data.get("description").trim(),
     createdAt: existingExpense?.createdAt || Date.now(),
   };
@@ -440,6 +543,7 @@ monthFilter.addEventListener("change", () => {
   renderProgress();
   renderReport();
 });
+exportExcelButton.addEventListener("click", exportMonthlyReport);
 
 document.querySelector("#today").textContent = new Intl.DateTimeFormat("en-IN", {
   weekday: "long",
