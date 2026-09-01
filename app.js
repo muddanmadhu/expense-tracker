@@ -206,9 +206,14 @@ function detectDevice() {
   return ["WEB", deviceName, operatingSystem, browser].join(" · ");
 }
 
-function csvCell(value) {
-  const text = String(value ?? "");
-  return `"${text.replaceAll('"', '""')}"`;
+function xmlCell(value, type = "String") {
+  const text = String(value ?? "")
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&apos;");
+  return `<Cell><Data ss:Type="${type}">${text}</Data></Cell>`;
 }
 
 function exportMonthlyReport() {
@@ -225,45 +230,58 @@ function exportMonthlyReport() {
     return report;
   }, {});
   const rows = [
-    ["POCKETTRACK EXPENSE REPORT"],
-    ["Month", formatMonth(selectedMonth)],
-    ["Total spent", getMonthlyTotal(selectedMonth).toFixed(2)],
+    [["POCKETTRACK EXPENSE REPORT"]],
+    [["Month"], [formatMonth(selectedMonth)]],
+    [["Total spent"], [getMonthlyTotal(selectedMonth), "Number"]],
     [],
-    ["CATEGORY SUMMARY"],
-    ["Expense Type", "Amount (INR)"],
+    [["CATEGORY SUMMARY"]],
+    [["Expense Type"], ["Amount (INR)"]],
     ...Object.entries(categoryTotals)
       .sort((a, b) => b[1] - a[1])
-      .map(([type, amount]) => [type, amount.toFixed(2)]),
+      .map(([type, amount]) => [[type], [amount, "Number"]]),
     [],
-    ["EXPENSE DETAILS"],
+    [["EXPENSE DETAILS"]],
     [
-      "Date",
-      "Expense Type",
-      "Subcategory",
-      "Payment Mode",
-      "Tracked From",
-      "Description",
-      "Amount (INR)",
+      ["Date"],
+      ["Expense Type"],
+      ["Subcategory"],
+      ["Payment Mode"],
+      ["Tracked From"],
+      ["Description"],
+      ["Amount (INR)"],
     ],
     ...monthlyExpenses.map((expense) => [
-      expense.date,
-      expense.type.toUpperCase(),
-      expense.subcategory || "",
-      expense.mode,
-      expense.device || "WEB · DEVICE NOT RECORDED",
-      expense.description || "",
-      expense.amount.toFixed(2),
+      [`${expense.date}T00:00:00.000`, "DateTime"],
+      [expense.type.toUpperCase()],
+      [expense.subcategory || ""],
+      [expense.mode],
+      [expense.device || "WEB · DEVICE NOT RECORDED"],
+      [expense.description || ""],
+      [expense.amount, "Number"],
     ]),
   ];
-  const csv = `\uFEFF${rows
-    .map((row) => row.map(csvCell).join(","))
-    .join("\r\n")}`;
+  const worksheetRows = rows
+    .map(
+      (row) =>
+        `<Row>${row.map(([value, type]) => xmlCell(value, type)).join("")}</Row>`,
+    )
+    .join("");
+  const workbook = `<?xml version="1.0"?>
+<?mso-application progid="Excel.Sheet"?>
+<Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet"
+ xmlns:o="urn:schemas-microsoft-com:office:office"
+ xmlns:x="urn:schemas-microsoft-com:office:excel"
+ xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet">
+ <Worksheet ss:Name="Expense Report">
+  <Table>${worksheetRows}</Table>
+ </Worksheet>
+</Workbook>`;
   const url = URL.createObjectURL(
-    new Blob([csv], { type: "text/csv;charset=utf-8" }),
+    new Blob([workbook], { type: "application/vnd.ms-excel" }),
   );
   const link = document.createElement("a");
   link.href = url;
-  link.download = `expense-report-${selectedMonth}.csv`;
+  link.download = `expense-report-${selectedMonth}.xls`;
   document.body.appendChild(link);
   link.click();
   link.remove();
