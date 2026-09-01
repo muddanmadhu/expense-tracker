@@ -1,0 +1,205 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="Track daily expenses and review monthly spending insights."
+    />
+    <title>PocketTrack | Expense Tracker</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <header class="topbar">
+      <a class="brand" href="#" aria-label="PocketTrack home">
+        <span class="brand-mark">P</span>
+        <span>PocketTrack</span>
+      </a>
+      <p class="today" id="today"></p>
+    </header>
+
+    <main>
+      <section class="hero">
+        <div>
+          <p class="eyebrow">PERSONAL FINANCE</p>
+          <h1>Make every rupee<br /><em>count.</em></h1>
+          <p class="hero-copy">
+            A clear view of what you spend, where it goes, and how this month
+            compares.
+          </p>
+        </div>
+        <div class="hero-stat">
+          <span>This month</span>
+          <strong id="hero-total">₹0</strong>
+          <small id="hero-change">No expenses yet</small>
+        </div>
+      </section>
+
+      <section class="entry-card" aria-labelledby="entry-title">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">QUICK ENTRY</p>
+            <h2 id="entry-title">Add an expense</h2>
+          </div>
+          <span class="step-label">Takes less than a minute</span>
+        </div>
+
+        <form id="expense-form">
+          <div class="form-grid">
+            <label>
+              <span>Date</span>
+              <input id="date" name="date" type="date" required />
+            </label>
+            <label>
+              <span>Amount</span>
+              <div class="amount-field">
+                <span>₹</span>
+                <input
+                  id="amount"
+                  name="amount"
+                  type="number"
+                  min="0.01"
+                  step="0.01"
+                  placeholder="0.00"
+                  required
+                />
+              </div>
+            </label>
+            <label>
+              <span>Expense type</span>
+              <select id="type" name="type" required>
+                <option value="">Choose a category</option>
+              </select>
+            </label>
+            <label id="subcategory-field" hidden>
+              <span>Utility type</span>
+              <select id="subcategory" name="subcategory">
+                <option value="">Choose utility type</option>
+                <option>Water</option>
+                <option>Electricity</option>
+              </select>
+            </label>
+            <label id="custom-type-field" hidden>
+              <span>New expense type</span>
+              <input
+                id="custom-type"
+                name="customType"
+                maxlength="40"
+                placeholder="Enter a new expense type"
+              />
+            </label>
+            <label>
+              <span>Mode of payment</span>
+              <select id="mode" name="mode" required>
+                <option value="">Choose payment mode</option>
+                <option>Cash</option>
+                <option>UPI</option>
+                <option>Sodexo</option>
+                <option>Credit Card</option>
+              </select>
+            </label>
+          </div>
+          <label class="description-field">
+            <span>Description <small>(optional)</small></span>
+            <input
+              id="description"
+              name="description"
+              maxlength="80"
+              placeholder="What was this expense for?"
+            />
+          </label>
+          <div class="form-footer">
+            <p id="form-message" role="status" aria-live="polite"></p>
+            <button id="cancel-edit" class="secondary-button" type="button" hidden>
+              Cancel
+            </button>
+            <button class="primary-button" type="submit">
+              <span id="submit-label">Add expense</span>
+              <span aria-hidden="true">→</span>
+            </button>
+          </div>
+        </form>
+      </section>
+
+      <section class="dashboard" aria-label="Expense dashboard">
+        <div class="dashboard-card progress-card">
+          <div class="section-heading">
+            <div>
+              <p class="eyebrow">MONTH ON MONTH</p>
+              <h2>Spending progress</h2>
+            </div>
+            <select id="month-filter" aria-label="Select month"></select>
+          </div>
+          <div class="progress-summary">
+            <div>
+              <span>Selected month</span>
+              <strong id="month-total">₹0</strong>
+            </div>
+            <div>
+              <span>Previous month</span>
+              <strong id="previous-total">₹0</strong>
+            </div>
+          </div>
+          <div id="comparison-message" class="comparison-message"></div>
+          <div id="monthly-chart" class="monthly-chart"></div>
+        </div>
+
+        <div class="dashboard-card insight-card">
+          <p class="eyebrow">TOP SPENDING AREA</p>
+          <h2>Where your money goes</h2>
+          <div id="top-category" class="top-category empty-insight">
+            <span class="category-icon">—</span>
+            <div>
+              <strong>No expenses yet</strong>
+              <small>Add an expense to see insights</small>
+            </div>
+          </div>
+          <div id="category-report" class="category-report"></div>
+        </div>
+      </section>
+
+      <section class="history-card" aria-labelledby="history-title">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">RECENT ACTIVITY</p>
+            <h2 id="history-title">Expense history</h2>
+          </div>
+          <span id="expense-count" class="count-badge">0 expenses</span>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>Expense</th>
+                <th>Payment</th>
+                <th>Amount</th>
+                <th><span class="sr-only">Actions</span></th>
+              </tr>
+            </thead>
+            <tbody id="expense-list"></tbody>
+          </table>
+          <div id="empty-state" class="empty-state">
+            <span>₹</span>
+            <strong>No expenses recorded</strong>
+            <p>Your entries will appear here.</p>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer>
+      <span>PocketTrack</span>
+      <p>Your data stays private in this browser.</p>
+    </footer>
+
+    <script src="app.js"></script>
+  </body>
+</html>
