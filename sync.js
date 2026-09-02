@@ -168,6 +168,8 @@ function listenForRemoteChanges(user) {
       merged.customTypes.length !== (remote.customTypes || []).length
     ) {
       pushLocalData();
+    } else {
+      setBadge(`Synced as ${user.displayName || user.email}`, "is-synced");
     }
   });
 }
