@@ -139,8 +139,12 @@ function mergeSnapshots(local, remote) {
   };
 }
 
-function userDocRef(user) {
-  return doc(db, "pockettrack-users", user.uid);
+// All allowed accounts share one household expense list, so every signed-in
+// user reads/writes the same fixed document rather than one per uid.
+const SHARED_DOC_ID = "household";
+
+function userDocRef() {
+  return doc(db, "pockettrack-shared", SHARED_DOC_ID);
 }
 
 async function pushLocalData() {
