@@ -106,39 +106,6 @@ function writeLocalSnapshot(snapshot) {
   }
 }
 
-// Merge two expense arrays by id, preferring the entry with the newer
-// createdAt/updatedAt timestamp when the same id exists on both sides.
-function mergeExpenses(localList, remoteList) {
-  const byId = new Map();
-  for (const expense of remoteList || []) byId.set(expense.id, expense);
-  for (const expense of localList || []) {
-    const existing = byId.get(expense.id);
-    if (!existing || (expense.createdAt || 0) >= (existing.createdAt || 0)) {
-      byId.set(expense.id, expense);
-    }
-  }
-  return [...byId.values()];
-}
-
-function mergeSnapshots(local, remote) {
-  if (!remote) return local;
-  if (!local) return remote;
-  const expenses = mergeExpenses(local.expenses, remote.expenses);
-  const customTypes = [
-    ...new Set([...(local.customTypes || []), ...(remote.customTypes || [])]),
-  ];
-  const dailyBudget =
-    (local.updatedAt || 0) >= (remote.updatedAt || 0)
-      ? local.dailyBudget
-      : remote.dailyBudget;
-  return {
-    expenses,
-    customTypes,
-    dailyBudget,
-    updatedAt: Math.max(local.updatedAt || 0, remote.updatedAt || 0),
-  };
-}
-
 // All allowed accounts share one household expense list, so every signed-in
 // user reads/writes the same fixed document rather than one per uid.
 const SHARED_DOC_ID = "household";
@@ -166,7 +133,7 @@ function listenForRemoteChanges(user) {
     userDocRef(user),
     (snap) => {
       if (!snap.exists()) {
-        // First sign-in on this account: seed the cloud with local data.
+        // First sign-in anywhere: seed the shared document with local data.
         pushLocalData();
         return;
       }
@@ -179,24 +146,15 @@ function listenForRemoteChanges(user) {
         return;
       }
 
-      const local = readLocalSnapshot();
-      const merged = mergeSnapshots(local, remote);
+      // Everyone shares one document, so the newest snapshot simply replaces
+      // what's on this device - no id-based merging. Merging by id would
+      // resurrect expenses that another device intentionally deleted.
       applyingRemoteUpdate = true;
-      writeLocalSnapshot(merged);
-      localStorage.setItem(SYNC_META_KEY, String(merged.updatedAt));
+      writeLocalSnapshot(remote);
+      localStorage.setItem(SYNC_META_KEY, String(remote.updatedAt || Date.now()));
       window.PocketApp?.reloadFromStorage();
       applyingRemoteUpdate = false;
-
-      // If the merge produced anything new relative to what's stored
-      // remotely, push the merged result back up.
-      if (
-        merged.expenses.length !== (remote.expenses || []).length ||
-        merged.customTypes.length !== (remote.customTypes || []).length
-      ) {
-        pushLocalData();
-      } else {
-        setBadge(`Synced as ${user.displayName || user.email}`, "is-synced");
-      }
+      setBadge(`Synced as ${user.displayName || user.email}`, "is-synced");
     },
     (error) => {
       console.error("PocketTrack sync: listener error", error);
