@@ -16,8 +16,7 @@ import {
 import {
   getAuth,
   GoogleAuthProvider,
-  signInWithRedirect,
-  getRedirectResult,
+  signInWithPopup,
   signOut,
   onAuthStateChanged,
 } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-auth.js";
@@ -175,7 +174,7 @@ function listenForRemoteChanges(user) {
 
 async function handleSignIn() {
   try {
-    await signInWithRedirect(auth, new GoogleAuthProvider());
+    await signInWithPopup(auth, new GoogleAuthProvider());
   } catch (error) {
     console.error("PocketTrack sync: sign-in failed", error);
     setBadge(`Sign-in failed: ${error.code || error.message}`, "is-error");
@@ -198,11 +197,6 @@ function initUI() {
   app = initializeApp(window.FIREBASE_CONFIG);
   auth = getAuth(app);
   db = getFirestore(app);
-
-  getRedirectResult(auth).catch((error) => {
-    console.error("PocketTrack sync: redirect sign-in failed", error);
-    setBadge(`Sign-in failed: ${error.code || error.message}`, "is-error");
-  });
 
   signInButton?.addEventListener("click", handleSignIn);
   signOutButton?.addEventListener("click", handleSignOut);
