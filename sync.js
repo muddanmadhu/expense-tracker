@@ -32,6 +32,14 @@ const CUSTOM_TYPES_KEY = "pockettrack-custom-types";
 const BUDGET_KEY = "pockettrack-daily-budget";
 const SYNC_META_KEY = "pockettrack-sync-meta";
 
+// Only these Google accounts are allowed to sign in and sync data.
+// Add/remove emails here to control who can use cloud sync.
+const ALLOWED_EMAILS = [
+  "muddanmadhu@gmail.com",
+  "krupamuddanmadhu@gmail.com",
+  "botuserm@gmail.com",
+];
+
 const isConfigured =
   window.FIREBASE_CONFIG &&
   window.FIREBASE_CONFIG.apiKey &&
@@ -48,6 +56,11 @@ let db;
 let currentUser = null;
 let remoteUnsubscribe = null;
 let applyingRemoteUpdate = false;
+
+function isAllowed(user) {
+  const email = (user?.email || "").toLowerCase();
+  return ALLOWED_EMAILS.some((allowed) => allowed.toLowerCase() === email);
+}
 
 function setBadge(text, className) {
   if (!syncBadge) return;
@@ -115,7 +128,7 @@ function userDocRef(user) {
 }
 
 async function pushLocalData() {
-  if (!isConfigured || !currentUser || applyingRemoteUpdate) return;
+  if (!isConfigured || !currentUser || !isAllowed(currentUser) || applyingRemoteUpdate) return;
   const snapshot = readLocalSnapshot();
   localStorage.setItem(SYNC_META_KEY, String(snapshot.updatedAt));
   try {
@@ -189,6 +202,18 @@ function initUI() {
   signOutButton?.addEventListener("click", handleSignOut);
 
   onAuthStateChanged(auth, (user) => {
+    if (user && !isAllowed(user)) {
+      // This Google account isn't on the allow-list: sign them back out
+      // immediately and show an explanatory message instead of syncing.
+      currentUser = null;
+      signOut(auth);
+      signInButton.hidden = false;
+      signOutButton.hidden = true;
+      syncUserLabel.hidden = true;
+      setBadge("This Google account isn't authorized to sync", "is-error");
+      return;
+    }
+
     currentUser = user;
     if (user) {
       signInButton.hidden = true;
