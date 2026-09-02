@@ -142,40 +142,47 @@ async function pushLocalData() {
 
 function listenForRemoteChanges(user) {
   remoteUnsubscribe?.();
-  remoteUnsubscribe = onSnapshot(userDocRef(user), (snap) => {
-    if (!snap.exists()) {
-      // First sign-in on this account: seed the cloud with local data.
-      pushLocalData();
-      return;
-    }
-    const remote = snap.data();
-    const localUpdatedAt = Number(localStorage.getItem(SYNC_META_KEY) || 0);
-    // Skip re-applying the write we just made ourselves, but still confirm
-    // the sync succeeded so the badge doesn't stay stuck on "Syncing…".
-    if (remote.updatedAt && remote.updatedAt <= localUpdatedAt) {
-      setBadge(`Synced as ${user.displayName || user.email}`, "is-synced");
-      return;
-    }
+  remoteUnsubscribe = onSnapshot(
+    userDocRef(user),
+    (snap) => {
+      if (!snap.exists()) {
+        // First sign-in on this account: seed the cloud with local data.
+        pushLocalData();
+        return;
+      }
+      const remote = snap.data();
+      const localUpdatedAt = Number(localStorage.getItem(SYNC_META_KEY) || 0);
+      // Skip re-applying the write we just made ourselves, but still confirm
+      // the sync succeeded so the badge doesn't stay stuck on "Syncing…".
+      if (remote.updatedAt && remote.updatedAt <= localUpdatedAt) {
+        setBadge(`Synced as ${user.displayName || user.email}`, "is-synced");
+        return;
+      }
 
-    const local = readLocalSnapshot();
-    const merged = mergeSnapshots(local, remote);
-    applyingRemoteUpdate = true;
-    writeLocalSnapshot(merged);
-    localStorage.setItem(SYNC_META_KEY, String(merged.updatedAt));
-    window.PocketApp?.reloadFromStorage();
-    applyingRemoteUpdate = false;
+      const local = readLocalSnapshot();
+      const merged = mergeSnapshots(local, remote);
+      applyingRemoteUpdate = true;
+      writeLocalSnapshot(merged);
+      localStorage.setItem(SYNC_META_KEY, String(merged.updatedAt));
+      window.PocketApp?.reloadFromStorage();
+      applyingRemoteUpdate = false;
 
-    // If the merge produced anything new relative to what's stored
-    // remotely, push the merged result back up.
-    if (
-      merged.expenses.length !== (remote.expenses || []).length ||
-      merged.customTypes.length !== (remote.customTypes || []).length
-    ) {
-      pushLocalData();
-    } else {
-      setBadge(`Synced as ${user.displayName || user.email}`, "is-synced");
-    }
-  });
+      // If the merge produced anything new relative to what's stored
+      // remotely, push the merged result back up.
+      if (
+        merged.expenses.length !== (remote.expenses || []).length ||
+        merged.customTypes.length !== (remote.customTypes || []).length
+      ) {
+        pushLocalData();
+      } else {
+        setBadge(`Synced as ${user.displayName || user.email}`, "is-synced");
+      }
+    },
+    (error) => {
+      console.error("PocketTrack sync: listener error", error);
+      setBadge(`Sync error: ${error.code || error.message}`, "is-error");
+    },
+  );
 }
 
 async function handleSignIn() {
