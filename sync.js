@@ -50,6 +50,22 @@ const signInButton = document.querySelector("#sync-signin");
 const signOutButton = document.querySelector("#sync-signout");
 const syncUserLabel = document.querySelector("#sync-user");
 
+const signinGate = document.querySelector("#signin-gate");
+const gateSignInButton = document.querySelector("#gate-signin");
+const gateMessage = document.querySelector("#signin-gate-message");
+const appContent = document.querySelector("#app-content");
+
+function showApp() {
+  if (signinGate) signinGate.hidden = true;
+  if (appContent) appContent.hidden = false;
+}
+
+function showGate(message) {
+  if (gateMessage && message) gateMessage.textContent = message;
+  if (signinGate) signinGate.hidden = false;
+  if (appContent) appContent.hidden = true;
+}
+
 let app;
 let auth;
 let db;
@@ -191,6 +207,7 @@ async function handleSignIn() {
   } catch (error) {
     console.error("PocketTrack sync: sign-in failed", error);
     setBadge(`Sign-in failed: ${error.code || error.message}`, "is-error");
+    showGate(`Sign-in failed: ${error.code || error.message}. Please try again.`);
   }
 }
 
@@ -204,6 +221,9 @@ function initUI() {
   if (!isConfigured) {
     setBadge("Local only (cloud sync not set up)", "is-local");
     if (signInButton) signInButton.hidden = true;
+    // No sign-in gate available without a configured backend, so let the
+    // user straight into the app in local-only mode.
+    showApp();
     return;
   }
 
@@ -213,6 +233,7 @@ function initUI() {
 
   signInButton?.addEventListener("click", handleSignIn);
   signOutButton?.addEventListener("click", handleSignOut);
+  gateSignInButton?.addEventListener("click", handleSignIn);
 
   onAuthStateChanged(auth, (user) => {
     if (user && !isAllowed(user)) {
@@ -224,6 +245,9 @@ function initUI() {
       signOutButton.hidden = true;
       syncUserLabel.hidden = true;
       setBadge("This Google account isn't authorized to sync", "is-error");
+      showGate(
+        "This Google account isn't authorized to use PocketTrack. Please sign in with an approved account."
+      );
       return;
     }
 
@@ -235,11 +259,15 @@ function initUI() {
       syncUserLabel.textContent = user.displayName || user.email;
       setBadge("Syncing…", "is-syncing");
       listenForRemoteChanges(user);
+      showApp();
     } else {
       signInButton.hidden = false;
       signOutButton.hidden = true;
       syncUserLabel.hidden = true;
       setBadge("Local only - sign in to sync across devices", "is-local");
+      showGate(
+        "Sign in with your Google account to view and track your expenses."
+      );
     }
   });
 }

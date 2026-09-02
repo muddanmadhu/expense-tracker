@@ -17,6 +17,20 @@
     <link rel="stylesheet" href="styles.css" />
   </head>
   <body>
+    <div id="signin-gate" class="signin-gate">
+      <div class="signin-card">
+        <span class="brand-mark">P</span>
+        <h1>PocketTrack</h1>
+        <p id="signin-gate-message">
+          Sign in with your Google account to view and track your expenses.
+        </p>
+        <button type="button" class="primary-button" id="gate-signin">
+          Sign in with Google
+        </button>
+      </div>
+    </div>
+
+    <div id="app-content" hidden>
     <header class="topbar">
       <a class="brand" href="#" aria-label="PocketTrack home">
         <span class="brand-mark">P</span>
@@ -280,6 +294,7 @@
       <span>PocketTrack</span>
       <p>Your data stays private in this browser.</p>
     </footer>
+    </div>
 
     <script src="app.js"></script>
     <script src="firebase-config.js"></script>
