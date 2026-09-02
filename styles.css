@@ -293,7 +293,7 @@ select:focus {
 
 .dashboard {
   display: grid;
-  grid-template-columns: 1.35fr 0.85fr;
+  grid-template-columns: 1fr 1.35fr 0.85fr;
   gap: 24px;
   margin-top: 24px;
 }
@@ -301,6 +301,111 @@ select:focus {
 .dashboard-card {
   min-height: 460px;
   padding: clamp(26px, 4vw, 42px);
+}
+
+.ghost-button {
+  height: 36px;
+  padding: 0 14px;
+  border: 1px solid var(--line);
+  background: transparent;
+  color: var(--ink);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.ghost-button:hover {
+  background: #eef1e5;
+  border-color: var(--ink);
+}
+
+.budget-settings {
+  margin-top: 24px;
+  padding: 18px;
+  background: #f7f5ee;
+  border: 1px solid var(--line);
+}
+
+.budget-settings-actions {
+  margin-top: 16px;
+  display: flex;
+  gap: 12px;
+}
+
+.budget-settings .primary-button,
+.budget-settings .secondary-button {
+  height: 44px;
+  min-width: 0;
+  flex: 1;
+}
+
+.budget-empty {
+  margin-top: 32px;
+  color: var(--ink-soft);
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.budget-summary {
+  margin-top: 32px;
+}
+
+.budget-figures {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+}
+
+.budget-figures > div {
+  padding: 18px;
+  border-left: 3px solid var(--lime-dark);
+  background: #f7f5ee;
+}
+
+.budget-figures span {
+  display: block;
+  color: var(--ink-soft);
+  font-size: 12px;
+}
+
+.budget-figures strong {
+  display: block;
+  margin-top: 6px;
+  font: 700 22px "Manrope", sans-serif;
+}
+
+.budget-status {
+  margin-top: 20px;
+  padding: 20px;
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  background: #eef6ea;
+  border-left: 4px solid #2f8f4e;
+}
+
+.budget-status strong {
+  font: 700 28px "Manrope", sans-serif;
+  color: #1f6b38;
+}
+
+.budget-status span {
+  color: var(--ink-soft);
+  font-size: 13px;
+}
+
+.budget-status.is-over {
+  background: #fbeceb;
+  border-left-color: #b2382a;
+}
+
+.budget-status.is-over strong {
+  color: #b2382a;
+}
+
+.budget-carry-note {
+  margin: 16px 0 0;
+  color: var(--ink-soft);
+  font-size: 13px;
 }
 
 #month-filter {

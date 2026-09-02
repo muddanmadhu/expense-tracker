@@ -129,6 +129,64 @@
       </section>
 
       <section class="dashboard" aria-label="Expense dashboard">
+        <div class="dashboard-card budget-card">
+          <div class="section-heading">
+            <div>
+              <p class="eyebrow">DAILY BUDGET</p>
+              <h2>Today's budget</h2>
+            </div>
+            <button id="budget-settings-toggle" class="ghost-button" type="button">
+              Set budget
+            </button>
+          </div>
+
+          <form id="budget-settings-form" class="budget-settings" hidden>
+            <label>
+              <span>Daily budget amount</span>
+              <div class="amount-field">
+                <span>₹</span>
+                <input
+                  id="daily-budget-amount"
+                  type="number"
+                  min="0"
+                  step="1"
+                  placeholder="e.g. 2000"
+                />
+              </div>
+            </label>
+            <div class="budget-settings-actions">
+              <button id="budget-settings-save" class="primary-button" type="submit">
+                Save budget
+              </button>
+              <button id="budget-settings-clear" class="secondary-button" type="button">
+                Turn off
+              </button>
+            </div>
+          </form>
+
+          <div id="budget-empty" class="budget-empty">
+            <p>Set a daily budget to track overspending, with any excess or savings carried into tomorrow.</p>
+          </div>
+
+          <div id="budget-summary" class="budget-summary" hidden>
+            <div class="budget-figures">
+              <div>
+                <span>Today's allowance</span>
+                <strong id="budget-allowance">₹0</strong>
+              </div>
+              <div>
+                <span>Spent today</span>
+                <strong id="budget-spent">₹0</strong>
+              </div>
+            </div>
+            <div id="budget-status" class="budget-status">
+              <strong id="budget-status-amount">₹0</strong>
+              <span id="budget-status-label">remaining</span>
+            </div>
+            <p id="budget-carry-note" class="budget-carry-note"></p>
+          </div>
+        </div>
+
         <div class="dashboard-card progress-card">
           <div class="section-heading">
             <div>

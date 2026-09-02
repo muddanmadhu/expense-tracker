@@ -1,5 +1,6 @@
 const STORAGE_KEY = "pockettrack-expenses";
 const CUSTOM_TYPES_KEY = "pockettrack-custom-types";
+const BUDGET_KEY = "pockettrack-daily-budget";
 const ADD_TYPE_VALUE = "__add_new_type__";
 const DEFAULT_EXPENSE_TYPES = [
   "RESTAURANT",
@@ -26,10 +27,17 @@ const monthFilter = document.querySelector("#month-filter");
 const exportExcelButton = document.querySelector("#export-excel");
 const expenseList = document.querySelector("#expense-list");
 const emptyState = document.querySelector("#empty-state");
+const budgetSettingsToggle = document.querySelector("#budget-settings-toggle");
+const budgetSettingsForm = document.querySelector("#budget-settings-form");
+const dailyBudgetInput = document.querySelector("#daily-budget-amount");
+const budgetSettingsClear = document.querySelector("#budget-settings-clear");
+const budgetEmpty = document.querySelector("#budget-empty");
+const budgetSummary = document.querySelector("#budget-summary");
 
 let expenses = loadExpenses();
 let customTypes = loadCustomTypes();
 let editingExpenseId = null;
+let dailyBudget = loadDailyBudget();
 
 const currency = new Intl.NumberFormat("en-IN", {
   style: "currency",
@@ -169,6 +177,48 @@ function total(items) {
 
 function getMonthlyTotal(key) {
   return total(expenses.filter((expense) => monthKey(expense.date) === key));
+}
+
+function loadDailyBudget() {
+  try {
+    const stored = JSON.parse(localStorage.getItem(BUDGET_KEY) || "null");
+    return stored && typeof stored.amount === "number" ? stored : null;
+  } catch {
+    return null;
+  }
+}
+
+function saveDailyBudget() {
+  if (dailyBudget) {
+    localStorage.setItem(BUDGET_KEY, JSON.stringify(dailyBudget));
+  } else {
+    localStorage.removeItem(BUDGET_KEY);
+  }
+}
+
+function addDays(dateStr, days) {
+  const date = new Date(`${dateStr}T12:00:00`);
+  date.setDate(date.getDate() + days);
+  return localDateString(date);
+}
+
+function monthStartDate(dateStr) {
+  return `${monthKey(dateStr)}-01`;
+}
+
+function getDailySpend(dateStr) {
+  return total(expenses.filter((expense) => expense.date === dateStr));
+}
+
+function getCarryForwardBalance(uptoDateExclusive) {
+  if (!dailyBudget) return 0;
+  let carry = 0;
+  let day = monthStartDate(uptoDateExclusive);
+  while (day < uptoDateExclusive) {
+    carry += dailyBudget.amount - getDailySpend(day);
+    day = addDays(day, 1);
+  }
+  return carry;
 }
 
 function detectDevice() {
@@ -451,12 +501,57 @@ function renderHistory() {
     .join("");
 }
 
+function renderBudget() {
+  if (!dailyBudget) {
+    budgetEmpty.hidden = false;
+    budgetSummary.hidden = true;
+    budgetSettingsToggle.textContent = "Set budget";
+    return;
+  }
+
+  budgetEmpty.hidden = true;
+  budgetSummary.hidden = false;
+  budgetSettingsToggle.textContent = "Edit budget";
+
+  const today = localDateString();
+  const carryForward = getCarryForwardBalance(today);
+  const allowance = dailyBudget.amount + carryForward;
+  const spentToday = getDailySpend(today);
+  const remaining = allowance - spentToday;
+
+  document.querySelector("#budget-allowance").textContent =
+    currency.format(allowance);
+  document.querySelector("#budget-spent").textContent =
+    currency.format(spentToday);
+
+  const statusBox = document.querySelector("#budget-status");
+  const statusAmount = document.querySelector("#budget-status-amount");
+  const statusLabel = document.querySelector("#budget-status-label");
+  const isOver = remaining < 0;
+
+  statusBox.classList.toggle("is-over", isOver);
+  statusAmount.textContent = currency.format(Math.abs(remaining));
+  statusLabel.textContent = isOver
+    ? "over budget today"
+    : "remaining today";
+
+  const carryNote = document.querySelector("#budget-carry-note");
+  if (carryForward === 0) {
+    carryNote.textContent = `Daily budget of ${currency.format(dailyBudget.amount)} resets on the 1st of every month.`;
+  } else if (carryForward > 0) {
+    carryNote.textContent = `Includes ${currency.format(carryForward)} saved and carried forward from earlier this month.`;
+  } else {
+    carryNote.textContent = `Includes ${currency.format(Math.abs(carryForward))} overspent carried forward from earlier this month.`;
+  }
+}
+
 function render(preferredMonth) {
   populateMonthFilter(preferredMonth);
   renderSummary();
   renderProgress();
   renderReport();
   renderHistory();
+  renderBudget();
 }
 
 form.addEventListener("submit", (event) => {
@@ -562,6 +657,36 @@ monthFilter.addEventListener("change", () => {
   renderReport();
 });
 exportExcelButton.addEventListener("click", exportMonthlyReport);
+
+budgetSettingsToggle.addEventListener("click", () => {
+  const isHidden = budgetSettingsForm.hidden;
+  budgetSettingsForm.hidden = !isHidden;
+  if (isHidden) {
+    dailyBudgetInput.value = dailyBudget ? dailyBudget.amount : "";
+    dailyBudgetInput.focus();
+  }
+});
+
+budgetSettingsForm.addEventListener("submit", (event) => {
+  event.preventDefault();
+  const amount = Number(dailyBudgetInput.value);
+  if (!Number.isFinite(amount) || amount <= 0) {
+    dailyBudgetInput.focus();
+    return;
+  }
+
+  dailyBudget = { amount };
+  saveDailyBudget();
+  budgetSettingsForm.hidden = true;
+  renderBudget();
+});
+
+budgetSettingsClear.addEventListener("click", () => {
+  dailyBudget = null;
+  saveDailyBudget();
+  budgetSettingsForm.hidden = true;
+  renderBudget();
+});
 
 document.querySelector("#today").textContent = new Intl.DateTimeFormat("en-IN", {
   weekday: "long",
