@@ -8,10 +8,10 @@
 // Leave the placeholders as-is to run PocketTrack in local-only mode
 // (no cloud sync, data stays in this browser's storage).
 window.FIREBASE_CONFIG = {
-  apiKey: "YOUR_API_KEY",
-  authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
-  projectId: "YOUR_PROJECT_ID",
-  storageBucket: "YOUR_PROJECT_ID.appspot.com",
-  messagingSenderId: "YOUR_SENDER_ID",
-  appId: "YOUR_APP_ID",
+  apiKey: "AIzaSyDWedXA4Ptu3RSAtZntL9ucS7q1AgiMlhw",
+  authDomain: "exptracker2026.firebaseapp.com",
+  projectId: "exptracker2026",
+  storageBucket: "exptracker2026.firebasestorage.app",
+  messagingSenderId: "860589148124",
+  appId: "1:860589148124:web:b6525b77c2ef70d78f7119",
 };
