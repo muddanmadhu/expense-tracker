@@ -66,6 +66,7 @@ function loadExpenses() {
 
 function saveExpenses() {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(expenses));
+  window.PocketSync?.pushLocalData();
 }
 
 function loadCustomTypes() {
@@ -87,6 +88,7 @@ function loadCustomTypes() {
 
 function saveCustomTypes() {
   localStorage.setItem(CUSTOM_TYPES_KEY, JSON.stringify(customTypes));
+  window.PocketSync?.pushLocalData();
 }
 
 function renderExpenseTypes(selectedType = "") {
@@ -194,6 +196,7 @@ function saveDailyBudget() {
   } else {
     localStorage.removeItem(BUDGET_KEY);
   }
+  window.PocketSync?.pushLocalData();
 }
 
 function addDays(dateStr, days) {
@@ -553,6 +556,18 @@ function render(preferredMonth) {
   renderHistory();
   renderBudget();
 }
+
+// Called by sync.js after remote (Firestore) data has been merged into
+// localStorage, so the UI reflects data synced from other devices.
+window.PocketApp = {
+  reloadFromStorage() {
+    expenses = loadExpenses();
+    customTypes = loadCustomTypes();
+    dailyBudget = loadDailyBudget();
+    renderExpenseTypes(typeInput.value);
+    render();
+  },
+};
 
 form.addEventListener("submit", (event) => {
   event.preventDefault();

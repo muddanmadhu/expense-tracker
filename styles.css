@@ -48,6 +48,50 @@ footer {
   border-bottom: 1px solid rgba(23, 55, 47, 0.16);
 }
 
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.sync-controls {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.sync-badge {
+  font-size: 12px;
+  font-weight: 600;
+  padding: 5px 10px;
+  border-radius: 999px;
+  background: rgba(23, 55, 47, 0.08);
+  color: var(--ink-soft);
+  white-space: nowrap;
+}
+
+.sync-badge.is-synced {
+  background: rgba(70, 176, 110, 0.18);
+  color: #1c7a41;
+}
+
+.sync-badge.is-syncing {
+  background: rgba(230, 179, 60, 0.2);
+  color: #93690c;
+}
+
+.sync-badge.is-error {
+  background: rgba(214, 68, 68, 0.16);
+  color: #b3271f;
+}
+
+.sync-user {
+  font-size: 13px;
+  color: var(--ink-soft);
+  white-space: nowrap;
+}
+
+
 .brand {
   color: var(--ink);
   text-decoration: none;
@@ -742,6 +786,18 @@ footer p {
 
   .dashboard {
     grid-template-columns: 1fr;
+  }
+
+  .topbar {
+    height: auto;
+    flex-wrap: wrap;
+    gap: 10px;
+    padding: 12px 0;
+  }
+
+  .header-right {
+    flex-wrap: wrap;
+    gap: 8px;
   }
 }
 

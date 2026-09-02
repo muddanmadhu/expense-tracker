@@ -22,7 +22,24 @@
         <span class="brand-mark">P</span>
         <span>PocketTrack</span>
       </a>
-      <p class="today" id="today"></p>
+      <div class="header-right">
+        <p class="today" id="today"></p>
+        <div class="sync-controls">
+          <span class="sync-badge is-local" id="sync-status">Local only</span>
+          <span class="sync-user" id="sync-user" hidden></span>
+          <button
+            type="button"
+            class="ghost-button"
+            id="sync-signin"
+            title="Sign in with Google to sync your data across devices"
+          >
+            Sign in with Google
+          </button>
+          <button type="button" class="ghost-button" id="sync-signout" hidden>
+            Sign out
+          </button>
+        </div>
+      </div>
     </header>
 
     <main>
@@ -265,5 +282,7 @@
     </footer>
 
     <script src="app.js"></script>
+    <script src="firebase-config.js"></script>
+    <script type="module" src="sync.js"></script>
   </body>
 </html>
