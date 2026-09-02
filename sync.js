@@ -150,8 +150,12 @@ function listenForRemoteChanges(user) {
     }
     const remote = snap.data();
     const localUpdatedAt = Number(localStorage.getItem(SYNC_META_KEY) || 0);
-    // Skip re-applying the write we just made ourselves.
-    if (remote.updatedAt && remote.updatedAt <= localUpdatedAt) return;
+    // Skip re-applying the write we just made ourselves, but still confirm
+    // the sync succeeded so the badge doesn't stay stuck on "Syncing…".
+    if (remote.updatedAt && remote.updatedAt <= localUpdatedAt) {
+      setBadge(`Synced as ${user.displayName || user.email}`, "is-synced");
+      return;
+    }
 
     const local = readLocalSnapshot();
     const merged = mergeSnapshots(local, remote);
